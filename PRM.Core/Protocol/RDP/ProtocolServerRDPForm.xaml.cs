@@ -100,13 +100,13 @@ namespace PRM.Core.Protocol.RDP
         #region IValueConverter 成员  
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            var e = (EGatewayMode) parameter;
-            return e == (EGatewayMode) value;
+            var e = (EGatewayMode)parameter;
+            return e == (EGatewayMode)value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            var e = (EGatewayMode) parameter;
+            var e = (EGatewayMode)parameter;
             return e;
         }
         #endregion
@@ -134,7 +134,7 @@ namespace PRM.Core.Protocol.RDP
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             var a = (bool?)parameter;
-            var b = (bool?) value;
+            var b = (bool?)value;
             return a == b;
         }
 
