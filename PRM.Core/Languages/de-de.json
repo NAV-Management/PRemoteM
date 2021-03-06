@@ -1,5 +1,5 @@
 ﻿{
-  "language_name": "Deutsch(DE)",
+  "language_name": "Deutsch (DE)",
 
   "messagebox_title_warning": "PRemoteM Warnung",
   "messagebox_title_error": "PRemoteM Fehler",
@@ -86,7 +86,7 @@
   "system_options_quick_description": "Mit der Schnellverbindungsfunktion können Sie eine Schnellverbindungsleiste per Tastendruck aufrufen, dann können Sie das Schlüsselwort eingeben und die Verbindung durch drücken der Eingabetaste öffnen.",
   "system_options_quick_enable": "Aktiv",
   "system_options_quick_hot_key": "Hotkey",
-  "system_options_quick_allow_group_name_search": "Allow search group name",
+  "system_options_quick_allow_group_name_search": "Gruppenname suchen lassen",
 
   "system_options_data_security_title": "Datenbank & Sicherheit",
   "system_options_data_security_database": "Datenbank",
@@ -200,7 +200,7 @@
   "server_editor_advantage_smart_cards": "Smartcards",
   "server_editor_advantage_ssh_version": "SSH Version",
   "server_editor_advantage_ssh_startup_auto_command": "Auto-Befehl",
-  "server_editor_advantage_ssh_startup_auto_kitty_session_tip": "support external config by select a session file path of KiTTY",
+  "server_editor_advantage_ssh_startup_auto_kitty_session_tip": "Unterstützung der externen Konfiguration durch Auswahl eines Sitzungsdateipfades von KiTTY",
   "server_editor_advantage_sftp_startup_path": "Start-Pfad",
   // server editor - RD-gateway group items
   "server_editor_gateway_mode": "Verbindung",
