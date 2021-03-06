@@ -86,6 +86,7 @@
   "system_options_quick_description": "快速连接允许用户在桌面任何位置，通过快捷键唤起快速连接搜索框，键入关键字筛选所要连接的服务器，并按下回车开启远程连接。",
   "system_options_quick_enable": "启用",
   "system_options_quick_hot_key": "快捷键",
+  "system_options_quick_allow_group_name_search": "允许搜索组名",
 
   "system_options_data_security_title": "数据与安全",
   "system_options_data_security_database": "数据库",
@@ -199,6 +200,7 @@
   "server_editor_advantage_smart_cards": "智能卡",
   "server_editor_advantage_ssh_version": "SSH Verison",
   "server_editor_advantage_ssh_startup_auto_command": "自动命令",
+  "server_editor_advantage_ssh_startup_auto_kitty_session_tip": "输入 KiTTY Portable.exe 的 Session 配置路径可支持更多额外配置",
   "server_editor_advantage_sftp_startup_path": "启动位置",
   // server editor - RD-gateway group items
   "server_editor_gateway_mode": "连接设置",
@@ -209,7 +211,7 @@
   "server_editor_gateway_logon_method": "登录方法",
   "server_editor_gateway_logon_method_psw": "账号密码",
   "server_editor_gateway_logon_method_smart_card": "智能卡",
-  "server_editor_gateway_bypass_gateway_for_loacl_address": "不对本地地址使用RD网关",
+  "server_editor_gateway_bypass_gateway_for_local_address": "不对本地地址使用RD网关",
   // server editor - RD-App group items
   "server_editor_remote_app_name": "程序名称",
   "server_editor_remote_app_name_tag": "程序名称的名称（如 hello.exe）",
@@ -240,5 +242,5 @@
   "error_report_send_by_github": "通过GitHub",
 
   // other
-  "logo_selecter_open_file_dialog_title": "选择图片"
+  "logo_selector_open_file_dialog_title": "选择图片"
 }

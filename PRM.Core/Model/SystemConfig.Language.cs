@@ -55,29 +55,29 @@ namespace PRM.Core.Model
             LanguageJsonDir = Path.Combine(appDateFolder, "Languages");
             if (!Directory.Exists(LanguageJsonDir))
                 Directory.CreateDirectory(LanguageJsonDir);
-#if DEV
-            var zh_cn_json = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/PRM.Core;component/Languages/zh-cn.json")).Stream;
-            using (var fileStream = File.Create(Path.Combine(LanguageJsonDir, "zh-cn.json")))
-            {
-                zh_cn_json.Seek(0, SeekOrigin.Begin);
-                zh_cn_json.CopyTo(fileStream);
-            }
-            zh_cn_json.Close();
-            var en_us_json = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/PRM.Core;component/Languages/en-us.json")).Stream;
-            using (var fileStream = File.Create(Path.Combine(LanguageJsonDir, "en-us.json")))
-            {
-                en_us_json.Seek(0, SeekOrigin.Begin);
-                en_us_json.CopyTo(fileStream);
-            }
-            en_us_json.Close();
-            var de_de_json = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/PRM.Core;component/Languages/de-de.json")).Stream;
-            using (var fileStream = File.Create(Path.Combine(LanguageJsonDir, "de-de.json")))
-            {
-                de_de_json.Seek(0, SeekOrigin.Begin);
-                de_de_json.CopyTo(fileStream);
-            }
-            de_de_json.Close();
-#endif
+//#if DEV
+//            var zh_cn_json = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/PRM.Core;component/Languages/zh-cn.json")).Stream;
+//            using (var fileStream = File.Create(Path.Combine(LanguageJsonDir, "zh-cn.json")))
+//            {
+//                zh_cn_json.Seek(0, SeekOrigin.Begin);
+//                zh_cn_json.CopyTo(fileStream);
+//            }
+//            zh_cn_json.Close();
+//            var en_us_json = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/PRM.Core;component/Languages/en-us.json")).Stream;
+//            using (var fileStream = File.Create(Path.Combine(LanguageJsonDir, "en-us.json")))
+//            {
+//                en_us_json.Seek(0, SeekOrigin.Begin);
+//                en_us_json.CopyTo(fileStream);
+//            }
+//            en_us_json.Close();
+//            var de_de_json = System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/PRM.Core;component/Languages/de-de.json")).Stream;
+//            using (var fileStream = File.Create(Path.Combine(LanguageJsonDir, "de-de.json")))
+//            {
+//                de_de_json.Seek(0, SeekOrigin.Begin);
+//                de_de_json.CopyTo(fileStream);
+//            }
+//            de_de_json.Close();
+//#endif
             Init();
             _defaultLanguageResourceDictionary = GetResourceDictionaryByCode(DefaultLanguageCode);
             _currentLanguageResourceDictionary = _defaultLanguageResourceDictionary;
@@ -89,6 +89,12 @@ namespace PRM.Core.Model
             _languageCode2Name.Clear();
             _languageCode2Resources.Clear();
 
+            // add static language resources
+            AddStaticLanguageResources("en-us");
+            AddStaticLanguageResources("zh-cn");
+            AddStaticLanguageResources("de-de");
+
+
             // add dynamic json
             var di = new DirectoryInfo(LanguageJsonDir);
             var fis = di.GetFiles("*.json");
@@ -97,19 +103,13 @@ namespace PRM.Core.Model
                 var code = fi.Name.ReplaceLast(fi.Extension, "");
                 AddJsonLanguageResources(code, fi.FullName);
             }
-
-            // add static language resources
-            AddStaticLanguageResources("zh-cn");
-            AddStaticLanguageResources("en-us");
-            AddStaticLanguageResources("de-de");
         }
 
         public void AddJsonLanguageResources(string code, string fullName)
         {
-            var resourceDictionary = MultiLangHelper.LangDictFromJsonFile(fullName);
+            var resourceDictionary = GetResourceDictionaryByJsonFilePath(fullName);
             if (resourceDictionary?.Contains("language_name") != true) return;
-            var r = GetResourceDictionaryByJsonFilePath(fullName);
-            AddOrUpdateLanguage(code, resourceDictionary["language_name"].ToString(), r);
+            AddOrUpdateLanguage(code, resourceDictionary["language_name"].ToString(), resourceDictionary);
         }
 
         private void AddStaticLanguageResources(string code)

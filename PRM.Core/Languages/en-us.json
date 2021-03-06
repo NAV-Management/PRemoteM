@@ -86,6 +86,7 @@
   "system_options_quick_description": "Quick connect allow you hang up a quick connect bar by hot key, then you can type the keyword and start connection by press enter key",
   "system_options_quick_enable": "Enable",
   "system_options_quick_hot_key": "Hot key",
+  "system_options_quick_allow_group_name_search": "Allow search group name",
 
   "system_options_data_security_title": "Data & Security",
   "system_options_data_security_database": "Database",
@@ -199,6 +200,7 @@
   "server_editor_advantage_smart_cards": "Smart Cards",
   "server_editor_advantage_ssh_version": "SSH Verison",
   "server_editor_advantage_ssh_startup_auto_command": "Auto command",
+  "server_editor_advantage_ssh_startup_auto_kitty_session_tip": "support external config by select a session file path of KiTTY",
   "server_editor_advantage_sftp_startup_path": "Startup path",
   // server editor - RD-gateway group items
   "server_editor_gateway_mode": "Connection",
@@ -209,7 +211,7 @@
   "server_editor_gateway_logon_method": "Logon Method",
   "server_editor_gateway_logon_method_psw": "Password",
   "server_editor_gateway_logon_method_smart_card": "Smart Card",
-  "server_editor_gateway_bypass_gateway_for_loacl_address": "Bypass RD Gateway server for local address",
+  "server_editor_gateway_bypass_gateway_for_local_address": "Bypass RD Gateway server for local address",
   // server editor - RD-App group items
   "server_editor_remote_app_name": "App Name",
   "server_editor_remote_app_name_tag": "name of app(e.g. hello)",
@@ -240,5 +242,5 @@
   "error_report_send_by_github": "Send by GitHub",
 
   // other
-  "logo_selecter_open_file_dialog_title": "select a picture"
+  "logo_selector_open_file_dialog_title": "select a picture"
 }

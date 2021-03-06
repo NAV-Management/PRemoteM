@@ -18,10 +18,36 @@ namespace PRM.Core.Protocol.Putty
     {
         public readonly List<PuttyOptionItem> Options = new List<PuttyOptionItem>();
         public readonly string SessionName;
-        public PuttyOptions(string sessionName)
+        public PuttyOptions(string sessionName, string overwritePath = null)
         {
             SessionName = sessionName;
             InitDefault();
+            if (!string.IsNullOrEmpty(overwritePath))
+            {
+                var overWrite = KittyPortableSessionConfigReader.Read(overwritePath);
+                foreach (var item in overWrite)
+                {
+                    if (Options.Any(x => string.Equals(x.Key, item.Key, StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        var oldItem = Options.First(x => string.Equals(x.Key, item.Key, StringComparison.CurrentCultureIgnoreCase));
+                        oldItem.Value = item.Value;
+                        oldItem.ValueKind = item.ValueKind;
+                    }
+                    else
+                    {
+                        Options.Add(item);
+                    }
+                }
+            }
+
+            // DISABLED ALT + F4
+            if (Options.Any(x => String.Equals(x.Key, EnumKittyOptionKey.AltF4.ToString(), StringComparison.CurrentCultureIgnoreCase)))
+            {
+                var oldItem = Options.First(x => string.Equals(x.Key, EnumKittyOptionKey.AltF4.ToString(), StringComparison.CurrentCultureIgnoreCase));
+                oldItem.Value = 0;
+            }
+            else
+                Options.Add(PuttyOptionItem.Create(EnumKittyOptionKey.AltF4.ToString(), 0x00000000)); // DISABLED ALTF4
         }
 
 
@@ -153,7 +179,6 @@ namespace PRM.Core.Protocol.Putty
             Options.Add(PuttyOptionItem.Create(EnumKittyOptionKey.ApplicationCursorKeys.ToString(), 0x00000000));
             Options.Add(PuttyOptionItem.Create(EnumKittyOptionKey.ApplicationKeypad.ToString(), 0x00000000));
             Options.Add(PuttyOptionItem.Create(EnumKittyOptionKey.NetHackKeypad.ToString(), 0x00000000));
-            Options.Add(PuttyOptionItem.Create(EnumKittyOptionKey.AltF4.ToString(), 0x00000000)); // DISABLED ALTF4
             Options.Add(PuttyOptionItem.Create(EnumKittyOptionKey.AltSpace.ToString(), 0x00000000));
             Options.Add(PuttyOptionItem.Create(EnumKittyOptionKey.AltOnly.ToString(), 0x00000000));
             Options.Add(PuttyOptionItem.Create(EnumKittyOptionKey.ComposeKey.ToString(), 0x00000000));
@@ -279,16 +304,12 @@ namespace PRM.Core.Protocol.Putty
         public void SaveToPuttyRegistryTable()
         {
             string regPath = $"Software\\SimonTatham\\PuTTY\\Sessions\\{SessionName}";
-            using (var regKey = Registry.CurrentUser.CreateSubKey(regPath, RegistryKeyPermissionCheck.ReadWriteSubTree))
+            using var regKey = Registry.CurrentUser.CreateSubKey(regPath, RegistryKeyPermissionCheck.ReadWriteSubTree);
+            if (regKey == null) return;
+            foreach (var item in Options)
             {
-                if (regKey != null)
-                {
-                    foreach (var item in Options)
-                    {
-                        if (item.Value != null)
-                            regKey.SetValue(item.Key, item.Value, item.ValueKind);
-                    }
-                }
+                if (item.Value != null)
+                    regKey.SetValue(item.Key, item.Value, item.ValueKind);
             }
         }
 

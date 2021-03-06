@@ -44,6 +44,8 @@ namespace Shawn.Utils
                 SaveToLangResourceDictionary(rd, "zh-cn.xaml");
             if (jsonPath.IndexOf("en-us") >= 0)
                 SaveToLangResourceDictionary(rd, "en-us.xaml");
+            if (jsonPath.IndexOf("de-de") >= 0)
+                SaveToLangResourceDictionary(rd, "de-de.xaml");
 #endif
             SetKey(rd, LangFilePathKey, fi.FullName);
             SetKey(rd, ResourceTypeKey, ResourceTypeValue);
@@ -52,15 +54,23 @@ namespace Shawn.Utils
 
         private static ResourceDictionary LangDictFromJsonString(string jsonString)
         {
-            var rd = new ResourceDictionary();
-            var kvs = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonString);
-            foreach (var kv in kvs)
+            try
             {
-                SetKey(rd, kv.Key, kv.Value);
+                var rd = new ResourceDictionary();
+                var kvs = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonString);
+                foreach (var kv in kvs)
+                {
+                    SetKey(rd, kv.Key, kv.Value);
+                }
+                SetKey(rd, LangFilePathKey, "from_memory");
+                SetKey(rd, ResourceTypeKey, ResourceTypeValue);
+                return rd;
             }
-            SetKey(rd, LangFilePathKey, "from_memory");
-            SetKey(rd, ResourceTypeKey, ResourceTypeValue);
-            return rd;
+            catch (Exception e)
+            {
+                SimpleLogHelper.Error(e);
+                return new ResourceDictionary();
+            }
         }
 
         public static ResourceDictionary LangDictFromXamlUri(Uri uri)

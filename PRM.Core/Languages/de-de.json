@@ -1,5 +1,5 @@
 ﻿{
-  "language_name": "Deutsch (DE)",
+  "language_name": "Deutsch(DE)",
 
   "messagebox_title_warning": "PRemoteM Warnung",
   "messagebox_title_error": "PRemoteM Fehler",
@@ -86,6 +86,7 @@
   "system_options_quick_description": "Mit der Schnellverbindungsfunktion können Sie eine Schnellverbindungsleiste per Tastendruck aufrufen, dann können Sie das Schlüsselwort eingeben und die Verbindung durch drücken der Eingabetaste öffnen.",
   "system_options_quick_enable": "Aktiv",
   "system_options_quick_hot_key": "Hotkey",
+  "system_options_quick_allow_group_name_search": "Allow search group name",
 
   "system_options_data_security_title": "Datenbank & Sicherheit",
   "system_options_data_security_database": "Datenbank",
@@ -199,6 +200,7 @@
   "server_editor_advantage_smart_cards": "Smartcards",
   "server_editor_advantage_ssh_version": "SSH Version",
   "server_editor_advantage_ssh_startup_auto_command": "Auto-Befehl",
+  "server_editor_advantage_ssh_startup_auto_kitty_session_tip": "support external config by select a session file path of KiTTY",
   "server_editor_advantage_sftp_startup_path": "Start-Pfad",
   // server editor - RD-gateway group items
   "server_editor_gateway_mode": "Verbindung",
@@ -209,7 +211,7 @@
   "server_editor_gateway_logon_method": "Anmeldemethode",
   "server_editor_gateway_logon_method_psw": "Kennwort anfordern",
   "server_editor_gateway_logon_method_smart_card": "Smartcard",
-  "server_editor_gateway_bypass_gateway_for_loacl_address": "Remotedesktop-Gatewayserver für lokale Adressen umgehen",
+  "server_editor_gateway_bypass_gateway_for_local_address": "Remotedesktop-Gatewayserver für lokale Adressen umgehen",
   // server editor - RD-App group items
   "server_editor_remote_app_name": "Programm Name",
   "server_editor_remote_app_name_tag": "Name des Programms (bspw. Hallo)",
@@ -240,5 +242,5 @@
   "error_report_send_by_github": "Senden über Github",
 
   // other
-  "logo_selecter_open_file_dialog_title": "Bild auswählen"
+  "logo_selector_open_file_dialog_title": "Bild auswählen"
 }
