@@ -11,13 +11,11 @@ using Shawn.Utils;
 
 namespace PRM.Core.Protocol.Putty
 {
-
-
-
     public class PuttyOptions
     {
         public readonly List<PuttyOptionItem> Options = new List<PuttyOptionItem>();
         public readonly string SessionName;
+
         public PuttyOptions(string sessionName, string overwritePath = null)
         {
             SessionName = sessionName;
@@ -49,7 +47,6 @@ namespace PRM.Core.Protocol.Putty
             else
                 Options.Add(PuttyOptionItem.Create(EnumKittyOptionKey.AltF4.ToString(), 0x00000000)); // DISABLED ALTF4
         }
-
 
         private static string GetDefaultIni()
         {
@@ -265,31 +262,20 @@ namespace PRM.Core.Protocol.Putty
 #if UseKiTTY
             Options.Add(PuttyOptionItem.Create(EnumKittyOptionKey.Autocommand.ToString(), ""));
 #endif
-            #endregion
-        }
 
+            #endregion Default
+        }
 
         public void Set(EnumKittyOptionKey key, int value)
         {
-            if (Options.Any(x => x.Key == key.ToString()))
-            {
-                var item = Options.First(x => x.Key == key.ToString());
-                Debug.Assert(item != null);
-                Debug.Assert(item.ValueKind == RegistryValueKind.DWord);
-                item.Value = value;
-            }
-            else
-            {
-                Options.Add(PuttyOptionItem.Create(key.ToString(), value));
-            }
+            Set(key, value.ToString());
         }
+
         public void Set(EnumKittyOptionKey key, string value)
         {
             if (Options.Any(x => x.Key == key.ToString()))
             {
                 var item = Options.First(x => x.Key == key.ToString());
-                Debug.Assert(item != null);
-                Debug.Assert(item.ValueKind == RegistryValueKind.String);
                 item.Value = value;
             }
             else
@@ -404,7 +390,5 @@ namespace PRM.Core.Protocol.Putty
             DelFromKittyPortableConfig(kittyPath);
             DelFromKittyRegistryTable();
         }
-
-
     }
 }

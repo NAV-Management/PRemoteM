@@ -3,17 +3,18 @@ using System.IO;
 using System.Reflection;
 using System.Timers;
 using System.Windows;
-using Shawn.Utils;
 using Microsoft.Win32;
-using PRM.Core.Utils;
+using Shawn.Utils;
 
 namespace PRM.Core.Model
 {
     public partial class SystemConfig : NotifyPropertyChangedBase
     {
         #region singleton
+
         private static SystemConfig uniqueInstance;
         private static readonly object InstanceLock = new object();
+
         public static SystemConfig GetInstance()
         {
             if (uniqueInstance == null)
@@ -22,10 +23,10 @@ namespace PRM.Core.Model
             }
             return uniqueInstance;
         }
+
         public static SystemConfig Instance => GetInstance();
-        #endregion
 
-
+        #endregion singleton
 
         /// <summary>
         /// Must init before app start in app.cs
@@ -38,6 +39,7 @@ namespace PRM.Core.Model
                 uniqueInstance ??= new SystemConfig();
             }
         }
+
 #if DEV
         public const string AppName = "PRemoteM_Debug";
         public const string AppFullName = "PersonalRemoteManager_Debug";
@@ -47,17 +49,16 @@ namespace PRM.Core.Model
 #endif
         public static Ini Ini { get; set; }
 
-
-
         public SystemConfigLocality Locality { get; set; }
         public SystemConfigLanguage Language { get; set; }
         public SystemConfigGeneral General { get; set; }
+        public SystemConfigKeywordMatch KeywordMatch { get; set; }
         public SystemConfigLauncher Launcher { get; set; }
         public SystemConfigDataSecurity DataSecurity { get; set; }
         public SystemConfigTheme Theme { get; set; }
 
-
         private bool _stopAutoSaveConfig;
+
         public bool StopAutoSaveConfig
         {
             get => _stopAutoSaveConfig;
@@ -67,6 +68,7 @@ namespace PRM.Core.Model
 
                 General.StopAutoSave = value;
                 Language.StopAutoSave = value;
+                KeywordMatch.StopAutoSave = value;
                 Launcher.StopAutoSave = value;
                 DataSecurity.StopAutoSave = value;
                 Theme.StopAutoSave = value;
@@ -77,13 +79,11 @@ namespace PRM.Core.Model
         {
             Language.Save();
             General.Save();
+            KeywordMatch.Save();
             Launcher.Save();
             DataSecurity.Save();
             Theme.Save();
             Locality.Save();
         }
     }
-
-
-    
 }

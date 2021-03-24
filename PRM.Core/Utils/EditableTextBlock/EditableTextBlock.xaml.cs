@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace Shawn.Utils
 {
@@ -29,21 +20,12 @@ namespace Shawn.Utils
         {
             TextBox0.Visibility = Visibility.Collapsed;
 
-            {
-                Binding binding = new Binding("Background");
-                binding.Mode = BindingMode.OneWay;
-                binding.Source = this;
-                Button.SetBinding(BackgroundProperty, binding);
-            }
+            var bindingBackground = new Binding("Background") { Mode = BindingMode.OneWay, Source = this };
+            Button.SetBinding(BackgroundProperty, bindingBackground);
+            var bindingForeground = new Binding("Foreground") { Mode = BindingMode.OneWay, Source = this };
+            Button.SetBinding(ForegroundProperty, bindingForeground);
 
             Button.Focusable = false;
-
-            {
-                Binding binding = new Binding("Foreground");
-                binding.Mode = BindingMode.OneWay;
-                binding.Source = this;
-                Button.SetBinding(ForegroundProperty, binding);
-            }
 
             Button.MouseDoubleClick += (o, args) =>
             {
@@ -57,6 +39,7 @@ namespace Shawn.Utils
                     case Key.Escape:
                         EndEdit(false);
                         break;
+
                     case Key.Enter:
                         EndEdit(true);
                         break;
@@ -68,6 +51,7 @@ namespace Shawn.Utils
         {
             EndEdit(true);
         }
+
         private void BeginEdit()
         {
             if (TextBox0.Visibility != Visibility.Visible)
@@ -79,6 +63,7 @@ namespace Shawn.Utils
                 TextBox0.LostFocus += TextBoxOnLostFocus;
             }
         }
+
         private void EndEdit(bool isUseNewValue)
         {
             if (TextBox0.Visibility == Visibility.Visible)
@@ -109,9 +94,9 @@ namespace Shawn.Utils
             }
         }
 
-
         public static readonly DependencyProperty TextProperty = DependencyProperty.Register("Text", typeof(string), typeof(EditableTextBlock),
                 new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, new PropertyChangedCallback(OnTextChanged)));
+
         private static void OnTextChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is EditableTextBlock etb)
@@ -121,6 +106,7 @@ namespace Shawn.Utils
                 etb._oldText = (string)e.NewValue;
             }
         }
+
         public string Text
         {
             get => (string)GetValue(TextProperty);
@@ -135,6 +121,7 @@ namespace Shawn.Utils
         public Action<string> OnTextModified;
 
         public static readonly DependencyProperty CommandProperty = DependencyProperty.Register("OnTextModifiedCommand", typeof(ICommand), typeof(UserControl));
+
         /// <summary>
         /// Execute when text edit and modified
         /// </summary>
@@ -145,6 +132,7 @@ namespace Shawn.Utils
         }
 
         public static readonly DependencyProperty CommandParameterProperty = DependencyProperty.Register("OnTextModifiedCommandParameter", typeof(object), typeof(UserControl));
+
         public object OnTextModifiedCommandParameter
         {
             get => (object)GetValue(CommandParameterProperty);
@@ -153,15 +141,16 @@ namespace Shawn.Utils
 
         public static readonly DependencyProperty TextTrimmingProperty = DependencyProperty.Register("TextTrimming", typeof(TextTrimming), typeof(EditableTextBlock),
             new FrameworkPropertyMetadata(TextTrimming.None, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
         public TextTrimming TextTrimming
         {
             get => (TextTrimming)GetValue(TextTrimmingProperty);
             set => SetValue(TextTrimmingProperty, value);
         }
 
-
         public static readonly DependencyProperty IsEditableProperty = DependencyProperty.Register("IsEditable", typeof(bool), typeof(EditableTextBlock),
             new FrameworkPropertyMetadata(true, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, new PropertyChangedCallback(OnIsEditableChanged)));
+
         private static void OnIsEditableChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is EditableTextBlock etb)
@@ -169,6 +158,7 @@ namespace Shawn.Utils
                 etb.Button.IsEnabled = (bool)e.NewValue;
             }
         }
+
         public bool IsEditable
         {
             get => (bool)GetValue(IsEditableProperty);

@@ -7,10 +7,11 @@ using PRM.Core.DB;
 using PRM.Core.Model;
 using PRM.Core.Protocol;
 using PRM.Core.Protocol.Putty.Host;
+using Shawn.Utils;
 using PRM.Model;
 using PRM.View;
 using PRM.View.ErrorReport;
-using Shawn.Utils;
+using PRM.View.Guidance;
 
 namespace PRM
 {
@@ -35,6 +36,7 @@ namespace PRM
         private static void OnUnhandledException(Exception e)
         {
             SimpleLogHelper.Fatal(e);
+            CloseAllWindow();
             var errorReport = new ErrorReportWindow(e);
             errorReport.ShowDialog();
             App.Close();
@@ -79,17 +81,17 @@ namespace PRM
         {
             // TODO delete at 2021.04
 #if !FOR_MICROSOFT_STORE_ONLY
-            var startupMode = Shawn.Utils.SetSelfStartingHelper.StartupMode.Normal;
+            var startupMode = SetSelfStartingHelper.StartupMode.Normal;
             if (startupEvent.Args.Length > 0)
             {
                 System.Enum.TryParse(startupEvent.Args[0], out startupMode);
             }
-            if (startupMode == Shawn.Utils.SetSelfStartingHelper.StartupMode.SetSelfStart)
+            if (startupMode == SetSelfStartingHelper.StartupMode.SetSelfStart)
             {
                 SetSelfStartingHelper.SetSelfStartByShortcut(true);
                 Environment.Exit(0);
             }
-            if (startupMode == Shawn.Utils.SetSelfStartingHelper.StartupMode.UnsetSelfStart)
+            if (startupMode == SetSelfStartingHelper.StartupMode.UnsetSelfStart)
             {
                 SetSelfStartingHelper.SetSelfStartByShortcut(false);
                 Environment.Exit(0);
@@ -135,6 +137,7 @@ namespace PRM
             _desktopResolutionWatcher.OnDesktopResolutionChanged += () =>
             {
                 GlobalEventHelper.OnScreenResolutionChanged?.Invoke();
+                ReloadTaskTrayContextMenu();
             };
         }
 
@@ -157,11 +160,11 @@ namespace PRM
             // if ini is not existed, then it would be a new user
             bool isNewUser = !File.Exists(iniPath);
 
-
             var ini = new Ini(iniPath);
             var language = new SystemConfigLanguage(this.Resources, ini);
             var general = new SystemConfigGeneral(ini);
-            var quickConnect = new SystemConfigLauncher(ini);
+            var keyword = new SystemConfigKeywordMatch(Context, ini);
+            var launcher = new SystemConfigLauncher(ini);
             var theme = new SystemConfigTheme(this.Resources, ini);
             var locality = new SystemConfigLocality(new Ini(Path.Combine(appDateFolder, "locality.ini")));
 
@@ -172,7 +175,8 @@ namespace PRM
             SystemConfig.Init();
             SystemConfig.Instance.General = general;
             SystemConfig.Instance.Language = language;
-            SystemConfig.Instance.Launcher = quickConnect;
+            SystemConfig.Instance.KeywordMatch = keyword;
+            SystemConfig.Instance.Launcher = launcher;
             SystemConfig.Instance.DataSecurity = dataSecurity;
             SystemConfig.Instance.Theme = theme;
             SystemConfig.Instance.Locality = locality;
@@ -212,7 +216,7 @@ namespace PRM
             var appDateFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), SystemConfig.AppName);
 #if DEV
             SimpleLogHelper.WriteLogEnumLogLevel = SimpleLogHelper.EnumLogLevel.Debug;
-            Shawn.Utils.ConsoleManager.Show();
+            ConsoleManager.Show();
 #endif
             // BASE MODULES
             InitLog(appDateFolder);
@@ -243,9 +247,6 @@ namespace PRM
             {
                 Context.AppData.ServerListUpdate();
             }
-
-
-
 
             if (!SystemConfig.Instance.General.AppStartMinimized
                 || isNewUser)
@@ -314,7 +315,7 @@ namespace PRM
             SearchBoxWindow.SetHotKey();
         }
 
-        public static void Close(int exitCode = 0)
+        private static void CloseAllWindow()
         {
             try
             {
@@ -334,8 +335,13 @@ namespace PRM
             }
             finally
             {
-                Environment.Exit(exitCode);
             }
+        }
+
+        public static void Close(int exitCode = 0)
+        {
+            CloseAllWindow();
+            Environment.Exit(exitCode);
         }
     }
 }

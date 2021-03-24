@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using com.github.xiangyuecn.rsacsharp;
 using PRM.Core.DB;
+using PRM.Core.DB.IDB;
 using PRM.Core.Protocol;
 using PRM.Core.Protocol.Putty.SSH;
 using PRM.Core.Protocol.RDP;
@@ -14,6 +15,7 @@ namespace PRM.Core.Model
     public class DbOperator
     {
         private readonly IDb _db;
+
         public DbOperator(IDb db)
         {
             _db = db;
@@ -28,6 +30,10 @@ namespace PRM.Core.Model
                 && File.Exists(GetRsaPrivateKeyPath()))
             {
                 _rsa = new RSA(File.ReadAllText(GetRsaPrivateKeyPath()), true);
+            }
+            else
+            {
+                _rsa = null;
             }
             return true;
         }
@@ -78,8 +84,6 @@ namespace PRM.Core.Model
             {
                 return EnumDbStatus.RsaPrivateKeyFormatError;
             }
-
-
 
             // make sure public key is PEM format key
             try
@@ -189,7 +193,6 @@ namespace PRM.Core.Model
             return _rsa?.DecodeOrNull(originalString) ?? originalString;
         }
 
-
         public void EncryptInfo(ProtocolServerBase server)
         {
             if (_rsa == null) return;
@@ -222,7 +225,6 @@ namespace PRM.Core.Model
             }
         }
 
-
         private void EncryptPwdIfItIsNotEncrypted(ProtocolServerBase server)
         {
             if (_rsa == null) return;
@@ -248,6 +250,7 @@ namespace PRM.Core.Model
                     }
             }
         }
+
         public void DecryptPwdIfItIsEncrypted(ProtocolServerBase server)
         {
             if (_rsa == null) return;
@@ -262,6 +265,7 @@ namespace PRM.Core.Model
                     Debug.Assert(_rsa.DecodeOrNull(ssh.PrivateKey) != null);
                     ssh.PrivateKey = DecryptOrReturnOriginalString(ssh.PrivateKey);
                     break;
+
                 case ProtocolServerRDP rdp when !string.IsNullOrWhiteSpace(rdp.GatewayPassword):
                     Debug.Assert(_rsa.DecodeOrNull(rdp.GatewayPassword) != null);
                     rdp.GatewayPassword = DecryptOrReturnOriginalString(rdp.GatewayPassword);

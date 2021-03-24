@@ -7,7 +7,9 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using PRM.Core.Model;
 using PRM.Core.Protocol;
+using Shawn.Utils;
 using PRM.ViewModel;
+
 using Shawn.Utils;
 
 namespace PRM.View
@@ -68,19 +70,24 @@ namespace PRM.View
             PopupLogoSelectorClose();
         }
 
+        private void PopupLogoSelectorHeightAnimation(double to)
+        {
+            var animation = new DoubleAnimation
+            {
+                From = PopupLogoSelector.Height,
+                To = to,
+                Duration = new Duration(TimeSpan.FromMilliseconds(350)),
+                AccelerationRatio = 0.9,
+            };
+            PopupLogoSelector.BeginAnimation(HeightProperty, null);
+            PopupLogoSelector.BeginAnimation(HeightProperty, animation);
+        }
+
         private void PopupLogoSelectorOpen()
         {
             if (Math.Abs(PopupLogoSelector.Height) < 1)
             {
-                var animation = new DoubleAnimation
-                {
-                    From = PopupLogoSelector.Height,
-                    To = 197,
-                    Duration = new Duration(TimeSpan.FromMilliseconds(350)),
-                    AccelerationRatio = 0.9,
-                };
-                PopupLogoSelector.BeginAnimation(HeightProperty, null);
-                PopupLogoSelector.BeginAnimation(HeightProperty, animation);
+                PopupLogoSelectorHeightAnimation(197);
             }
         }
 
@@ -88,15 +95,7 @@ namespace PRM.View
         {
             if (PopupLogoSelector.Height > 0.5)
             {
-                var animation = new DoubleAnimation
-                {
-                    From = PopupLogoSelector.Height,
-                    To = 0,
-                    Duration = new Duration(TimeSpan.FromMilliseconds(350)),
-                    DecelerationRatio = 0.9,
-                };
-                PopupLogoSelector.BeginAnimation(HeightProperty, null);
-                PopupLogoSelector.BeginAnimation(HeightProperty, animation);
+                PopupLogoSelectorHeightAnimation(0);
             }
         }
 
@@ -107,30 +106,22 @@ namespace PRM.View
 
         private void ButtonTryCommandBeforeConnected_OnClick(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                string cmd = Vm.Server.CommandBeforeConnected;
-                if (!string.IsNullOrWhiteSpace(cmd))
-                {
-                    // TODO add some params
-                    Shawn.Utils.CmdRunner.RunCmdAsync(cmd);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, SystemConfig.Instance.Language.GetText("messagebox_title_error"), MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.None, MessageBoxOptions.DefaultDesktopOnly);
-            }
+            TryCmd(Vm.Server.CommandBeforeConnected);
         }
 
         private void ButtonTryCommandAfterDisconnected_OnClick(object sender, RoutedEventArgs e)
         {
+            TryCmd(Vm.Server.CommandAfterDisconnected);
+        }
+
+        private static void TryCmd(string cmd)
+        {
             try
             {
-                string cmd = Vm.Server.CommandAfterDisconnected;
                 if (!string.IsNullOrWhiteSpace(cmd))
                 {
                     // TODO add some params
-                    Shawn.Utils.CmdRunner.RunCmdAsync(cmd);
+                    CmdRunner.RunCmdAsync(cmd);
                 }
             }
             catch (Exception ex)

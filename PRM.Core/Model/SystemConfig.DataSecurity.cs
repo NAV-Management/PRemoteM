@@ -8,10 +8,7 @@ using System.IO;
 using com.github.xiangyuecn.rsacsharp;
 using Microsoft.Win32;
 using PRM.Core.DB;
-using PRM.Core.DB.freesql;
-using PRM.Core.Protocol;
-using PRM.Core.Protocol.Putty.SSH;
-using PRM.Core.Protocol.RDP;
+using PRM.Core.DB.IDB;
 using Shawn.Utils;
 
 namespace PRM.Core.Model
@@ -45,7 +42,6 @@ namespace PRM.Core.Model
             }
             return true;
         }
-
 
         private string _dbPath = null;
 
@@ -343,13 +339,13 @@ namespace PRM.Core.Model
 
                     try
                     {
-                        this._context.DbOperator.OpenConnection(DatabaseType.Sqlite, FreeSqlDb.GetConnectionStringSqlite(path));
+                        this._context.DbOperator.OpenConnection(DatabaseType.Sqlite, DbExtensions.GetSqliteConnectionString(path));
                         this._context.AppData.ServerListUpdate();
                     }
                     catch (Exception ee)
                     {
                         path = oldDbPath;
-                        this._context.DbOperator.OpenConnection(DatabaseType.Sqlite, FreeSqlDb.GetConnectionStringSqlite(path));
+                        this._context.DbOperator.OpenConnection(DatabaseType.Sqlite, DbExtensions.GetSqliteConnectionString(path));
                         this._context.AppData.ServerListUpdate();
                         SimpleLogHelper.Warning(ee);
                         MessageBox.Show(
@@ -393,7 +389,7 @@ namespace PRM.Core.Model
                             this._context.DbOperator.CloseConnection();
                             File.Move(oldDbPath, path);
                             File.Delete(oldDbPath);
-                            this._context.DbOperator.OpenConnection(DatabaseType.Sqlite, FreeSqlDb.GetConnectionStringSqlite(path));
+                            this._context.DbOperator.OpenConnection(DatabaseType.Sqlite, DbExtensions.GetSqliteConnectionString(path));
                             // Migrate do not need reload data
                             // this._appContext.AppData.ServerListUpdate();
                             DbPath = path;

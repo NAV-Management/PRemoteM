@@ -19,6 +19,9 @@ using PRM.Core.Protocol.Putty.Telnet;
 using PRM.Core.Protocol.RDP;
 using PRM.Core.Protocol.VNC;
 using Shawn.Utils;
+
+using Shawn.Utils;
+
 using MessageBox = System.Windows.MessageBox;
 
 namespace PRM.ViewModel
@@ -27,29 +30,13 @@ namespace PRM.ViewModel
     {
         private readonly PrmContext _context;
         private readonly ListBox _list;
+
         public VmServerListPage(PrmContext context, ListBox list)
         {
             _context = context;
             _list = list;
-            var lastSelectedGroup = "";
-            if (!string.IsNullOrEmpty(SystemConfig.Instance.Locality.MainWindowTabSelected))
-            {
-                lastSelectedGroup = SystemConfig.Instance.Locality.MainWindowTabSelected;
-            }
-
             RebuildVmServerCardList();
             _context.AppData.VmItemListDataChanged += RebuildVmServerCardList;
-
-            //SystemConfig.Instance.General.PropertyChanged += (sender, args) =>
-            //{
-            //    if (args.PropertyName == nameof(SystemConfig.General.ServerOrderBy))
-            //        OrderServerList();
-            //};
-
-            if (!string.IsNullOrEmpty(lastSelectedGroup) && ServerGroupList.Contains(lastSelectedGroup))
-            {
-                SelectedGroup = lastSelectedGroup;
-            }
 
             _context.AppData.OnMainWindowServerFilterChanged += new Action<string>(s =>
             {
@@ -58,6 +45,7 @@ namespace PRM.ViewModel
         }
 
         private VmProtocolServer _selectedServerListItem = null;
+
         public VmProtocolServer SelectedServerListItem
         {
             get => _selectedServerListItem;
@@ -65,6 +53,7 @@ namespace PRM.ViewModel
         }
 
         private ObservableCollection<VmProtocolServer> _serverListItems = new ObservableCollection<VmProtocolServer>();
+
         /// <summary>
         /// AllServerList data source for list view
         /// </summary>
@@ -79,8 +68,8 @@ namespace PRM.ViewModel
             }
         }
 
-
         private ObservableCollection<string> _serverGroupList = new ObservableCollection<string>();
+
         public ObservableCollection<string> ServerGroupList
         {
             get => _serverGroupList;
@@ -88,6 +77,7 @@ namespace PRM.ViewModel
         }
 
         private string _multiEditPropertyName = "Group";
+
         public string MultiEditPropertyName
         {
             get => _multiEditPropertyName;
@@ -95,6 +85,7 @@ namespace PRM.ViewModel
         }
 
         private string _multiEditNewValue = "";
+
         public string MultiEditNewValue
         {
             get => _multiEditNewValue;
@@ -102,6 +93,7 @@ namespace PRM.ViewModel
         }
 
         private string _selectedGroup = "";
+
         public string SelectedGroup
         {
             get => _selectedGroup;
@@ -116,6 +108,7 @@ namespace PRM.ViewModel
         }
 
         private bool _isSelectedAll;
+
         public bool IsSelectedAll
         {
             get => _isSelectedAll;
@@ -129,7 +122,6 @@ namespace PRM.ViewModel
                 }
             }
         }
-
 
         private void RebuildVmServerCardList()
         {
@@ -157,6 +149,11 @@ namespace PRM.ViewModel
             }
             if (ServerGroupList.Contains(selectedGroup))
                 SelectedGroup = selectedGroup;
+            else if (!string.IsNullOrEmpty(SystemConfig.Instance.Locality.MainWindowTabSelected)
+                && ServerGroupList.Contains(SystemConfig.Instance.Locality.MainWindowTabSelected))
+            {
+                SelectedGroup = SystemConfig.Instance.Locality.MainWindowTabSelected;
+            }
             else
                 SelectedGroup = "";
         }
@@ -172,27 +169,35 @@ namespace PRM.ViewModel
                 case EnumServerOrderBy.Protocol:
                     dataView.SortDescriptions.Add(new SortDescription(nameof(VmProtocolServer.Server) + "." + nameof(ProtocolServerBase.Protocol), ListSortDirection.Ascending));
                     break;
+
                 case EnumServerOrderBy.ProtocolDesc:
                     dataView.SortDescriptions.Add(new SortDescription(nameof(VmProtocolServer.Server) + "." + nameof(ProtocolServerBase.Protocol), ListSortDirection.Descending));
                     break;
+
                 case EnumServerOrderBy.Name:
                     dataView.SortDescriptions.Add(new SortDescription(nameof(VmProtocolServer.Server) + "." + nameof(ProtocolServerBase.DispName), ListSortDirection.Ascending));
                     break;
+
                 case EnumServerOrderBy.NameDesc:
                     dataView.SortDescriptions.Add(new SortDescription(nameof(VmProtocolServer.Server) + "." + nameof(ProtocolServerBase.DispName), ListSortDirection.Descending));
                     break;
+
                 case EnumServerOrderBy.GroupName:
                     dataView.SortDescriptions.Add(new SortDescription(nameof(VmProtocolServer.Server) + "." + nameof(ProtocolServerBase.GroupName), ListSortDirection.Ascending));
                     break;
+
                 case EnumServerOrderBy.GroupNameDesc:
                     dataView.SortDescriptions.Add(new SortDescription(nameof(VmProtocolServer.Server) + "." + nameof(ProtocolServerBase.GroupName), ListSortDirection.Descending));
                     break;
+
                 case EnumServerOrderBy.Address:
                     dataView.SortDescriptions.Add(new SortDescription(nameof(VmProtocolServer.Server) + "." + nameof(ProtocolServerWithAddrPortBase.Address), ListSortDirection.Ascending));
                     break;
+
                 case EnumServerOrderBy.AddressDesc:
                     dataView.SortDescriptions.Add(new SortDescription(nameof(VmProtocolServer.Server) + "." + nameof(ProtocolServerWithAddrPortBase.Address), ListSortDirection.Descending));
                     break;
+
                 default:
                     dataView.SortDescriptions.Add(new SortDescription(nameof(VmProtocolServer.Server) + "." + nameof(ProtocolServerWithAddrPortBase.Id), ListSortDirection.Ascending));
                     break;
@@ -231,20 +236,10 @@ namespace PRM.ViewModel
                 }
 
                 var keyWords = keyWord.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                var keyWordIsMatch = new List<bool>(keyWords.Length);
-                for (var i = 0; i < keyWords.Length; i++)
-                    keyWordIsMatch.Add(false);
-
                 var dispName = server.DispName;
                 var subTitle = server.SubTitle;
-                for (var i = 0; i < keyWordIsMatch.Count; i++)
-                {
-                    var f1 = dispName.IsMatchPinyinKeywords(keyWords[i], out var m1);
-                    var f2 = subTitle.IsMatchPinyinKeywords(keyWords[i], out var m2);
-                    keyWordIsMatch[i] = f1 || f2;
-                }
-
-                if (keyWordIsMatch.All(x => x == true))
+                var matched = _context.KeywordMatchService.Matchs(new List<string>() { dispName, subTitle }, keyWords).IsMatchAllKeywords;
+                if (matched)
                     card.ObjectVisibilityInList = Visibility.Visible;
                 else
                     card.ObjectVisibilityInList = Visibility.Collapsed;
@@ -257,9 +252,8 @@ namespace PRM.ViewModel
             RaisePropertyChanged(nameof(IsSelectedAll));
         }
 
-
-
         private RelayCommand _cmdAdd;
+
         public RelayCommand CmdAdd
         {
             get
@@ -272,6 +266,7 @@ namespace PRM.ViewModel
         }
 
         private RelayCommand _cmdExportSelectedToJson;
+
         public RelayCommand CmdExportSelectedToJson
         {
             get
@@ -311,8 +306,8 @@ namespace PRM.ViewModel
             }
         }
 
-
         private RelayCommand _cmdImportFromJson;
+
         public RelayCommand CmdImportFromJson
         {
             get
@@ -358,9 +353,8 @@ namespace PRM.ViewModel
             }
         }
 
-
-
         private RelayCommand _cmdImportFromCsv;
+
         public RelayCommand CmdImportFromCsv
         {
             get
@@ -438,7 +432,6 @@ namespace PRM.ViewModel
                                     // title
                                     var title = firstLine.ToLower().Split(';').ToList();
 
-
                                     var r = new Random();
                                     string line;
                                     while (!string.IsNullOrEmpty(line = sr.ReadLine()))
@@ -495,9 +488,8 @@ namespace PRM.ViewModel
                                                         GatewayPassword = getValue(title, arr, "RDGatewayPassword"),
                                                     };
 
-
-
                                                     break;
+
                                                 case "ssh1":
                                                     server = new ProtocolServerSSH()
                                                     {
@@ -510,6 +502,7 @@ namespace PRM.ViewModel
                                                         SshVersion = ProtocolServerSSH.ESshVersion.V1
                                                     };
                                                     break;
+
                                                 case "ssh2":
                                                     server = new ProtocolServerSSH()
                                                     {
@@ -522,6 +515,7 @@ namespace PRM.ViewModel
                                                         SshVersion = ProtocolServerSSH.ESshVersion.V2
                                                     };
                                                     break;
+
                                                 case "vnc":
                                                     server = new ProtocolServerVNC()
                                                     {
@@ -532,6 +526,7 @@ namespace PRM.ViewModel
                                                         Port = port.ToString(),
                                                     };
                                                     break;
+
                                                 case "telnet":
                                                     server = new ProtocolServerTelnet()
                                                     {
@@ -575,10 +570,8 @@ namespace PRM.ViewModel
             }
         }
 
-
-
-
         private RelayCommand _cmdDeleteSelected;
+
         public RelayCommand CmdDeleteSelected
         {
             get
@@ -606,9 +599,8 @@ namespace PRM.ViewModel
             }
         }
 
-
-
         private RelayCommand _cmdMultiEditSelected;
+
         public RelayCommand CmdMultiEditSelectedSave
         {
             get
@@ -740,9 +732,9 @@ namespace PRM.ViewModel
             }
         }
 
-
         private DateTime _lastCmdReOrder;
         private RelayCommand _cmdReOrder;
+
         public RelayCommand CmdReOrder
         {
             get
