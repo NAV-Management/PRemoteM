@@ -88,12 +88,12 @@ namespace PRM
             }
             if (startupMode == SetSelfStartingHelper.StartupMode.SetSelfStart)
             {
-                SetSelfStartingHelper.SetSelfStartByShortcut(true);
+                SetSelfStartingHelper.SetSelfStartByShortcut(true, SystemConfig.AppName);
                 Environment.Exit(0);
             }
             if (startupMode == SetSelfStartingHelper.StartupMode.UnsetSelfStart)
             {
-                SetSelfStartingHelper.SetSelfStartByShortcut(false);
+                SetSelfStartingHelper.SetSelfStartByShortcut(false, SystemConfig.AppName);
                 Environment.Exit(0);
             }
 #endif
@@ -233,14 +233,12 @@ namespace PRM
             InitLauncher();
             InitTaskTray();
 
-            // Database
+            // INIT Database
             var connStatus = Context.InitSqliteDb(SystemConfig.Instance.DataSecurity.DbPath);
             if (connStatus != EnumDbStatus.OK)
             {
                 string error = connStatus.GetErrorInfo(SystemConfig.Instance.Language, SystemConfig.Instance.DataSecurity.DbPath);
-                MessageBox.Show(error,
-                    SystemConfig.Instance.Language.GetText("messagebox_title_error"), MessageBoxButton.OK,
-                    MessageBoxImage.Error, MessageBoxResult.None, MessageBoxOptions.DefaultDesktopOnly);
+                MessageBox.Show(error, SystemConfig.Instance.Language.GetText("messagebox_title_error"), MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.None, MessageBoxOptions.DefaultDesktopOnly);
                 Window.Vm.CmdGoSysOptionsPage.Execute(typeof(SystemConfigDataSecurity));
             }
             else
