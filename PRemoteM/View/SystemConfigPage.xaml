@@ -9,6 +9,7 @@
              xmlns:utils="clr-namespace:Shawn.Utils;assembly=PRM.Core"
              xmlns:colorPickerWpf="clr-namespace:ColorPickerWPF;assembly=PRM.Core"
              mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance model:SystemConfig}"
              d:DesignHeight="2450" d:DesignWidth="800">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -147,11 +148,13 @@
                         </StackPanel>
                     </Grid>
 
-                    <Grid Style="{StaticResource EditorRowGrid}" Margin="0">
+                    <Grid Style="{StaticResource EditorRowGrid}" Margin="0" Height="Auto">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource EditorRowGridTitle}" Text="{DynamicResource system_options_general_start}"></TextBlock>
                             <Grid Style="{StaticResource EditorRowGridInput}">
-                                <CheckBox IsChecked="{Binding SystemConfig.General.AppStartAutomatically, Mode=TwoWay}" Content="{DynamicResource system_options_general_start_when_win_login}" VerticalAlignment="Center"></CheckBox>
+                                <StackPanel VerticalAlignment="Center">
+                                    <CheckBox IsChecked="{Binding SystemConfig.General.AppStartAutomatically, Mode=TwoWay}" Content="{DynamicResource system_options_general_start_when_win_login}" VerticalAlignment="Center"></CheckBox>
+                                </StackPanel>
                             </Grid>
                         </StackPanel>
                     </Grid>

@@ -1,19 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Forms;
 using AxMSTSCLib;
 using MSTSCLib;
-using PRM.Core.DB;
 using PRM.Core.Model;
 using Shawn.Utils;
-using Application = System.Windows.Application;
 using Color = System.Drawing.Color;
-using MessageBox = System.Windows.MessageBox;
-using MessageBoxOptions = System.Windows.MessageBoxOptions;
 
 namespace PRM.Core.Protocol.RDP.Host
 {
@@ -24,6 +19,7 @@ namespace PRM.Core.Protocol.RDP.Host
         private uint _primaryScaleFactor = 100;
 
         private bool _flagHasConnected = false;
+        private bool _flagHasLogin = false;
         private bool _isLastTimeFullScreen = false;
 
         private int _retryCount = 0;
@@ -168,6 +164,17 @@ namespace PRM.Core.Protocol.RDP.Host
             _rdp.AdvancedSettings6.ConnectionBarShowMinimizeButton = true;
             _rdp.AdvancedSettings6.ConnectionBarShowRestoreButton = true;
             _rdp.AdvancedSettings6.BitmapVirtualCache32BppSize = 48;
+            //((IMsRdpClientNonScriptable5) _rdp.GetOcx()).devi = _rdpServer.EnableDiskDrives;
+        }
+
+
+        public void NotifyRedirectDeviceChange(int msg, uint wParam, int lParam)
+        {
+            const int WM_DEVICECHANGE = 0x0219;
+            // see https://docs.microsoft.com/en-us/windows/win32/termserv/imsrdpclientnonscriptable-notifyredirectdevicechange
+            if (msg == WM_DEVICECHANGE
+                && ((IMsRdpClientNonScriptable3)_rdp.GetOcx()).RedirectDynamicDevices)
+                ((IMsRdpClientNonScriptable3)_rdp.GetOcx()).NotifyRedirectDeviceChange(wParam, lParam);
         }
 
         private void RdpInitRedirect()
@@ -175,6 +182,10 @@ namespace PRM.Core.Protocol.RDP.Host
             SimpleLogHelper.Debug("RDP Host: init Redirect");
 
             #region Redirect
+            // Specifies whether dynamically attached PnP devices that are enumerated while in a session are available for redirection. https://docs.microsoft.com/en-us/windows/win32/termserv/imsrdpclientnonscriptable3-redirectdynamicdevices
+            ((IMsRdpClientNonScriptable3)_rdp.GetOcx()).RedirectDynamicDevices = _rdpServer.EnableDiskDrives;
+            // Specifies or retrieves whether dynamically attached Plug and Play (PnP) drives that are enumerated while in a session are available for redirection. https://docs.microsoft.com/en-us/windows/win32/termserv/imsrdpclientnonscriptable3-redirectdynamicdrives
+            ((IMsRdpClientNonScriptable3)_rdp.GetOcx()).RedirectDynamicDrives = _rdpServer.EnableDiskDrives;
 
             _rdp.AdvancedSettings9.RedirectDrives = _rdpServer.EnableDiskDrives;
             _rdp.AdvancedSettings9.RedirectClipboard = _rdpServer.EnableClipboard;
@@ -230,11 +241,11 @@ namespace PRM.Core.Protocol.RDP.Host
 
         private void RdpInitDisplay(double width = 0, double height = 0, bool isReconn = false)
         {
-            SimpleLogHelper.Debug("RDP Host: init Display");
 
             #region Display
 
             ReadScaleFactor();
+            SimpleLogHelper.Debug($"RDP Host: init Display with ScaleFactor = {_primaryScaleFactor}, W = {width}, H = {height}");
             _rdp.SetExtendedProperty("DesktopScaleFactor", _primaryScaleFactor);
             _rdp.SetExtendedProperty("DeviceScaleFactor", (uint)100);
             if (_rdpServer.RdpWindowResizeMode == ERdpWindowResizeMode.Stretch
@@ -277,6 +288,9 @@ namespace PRM.Core.Protocol.RDP.Host
                         }
                         break;
                 }
+
+            SimpleLogHelper.Debug($"RDP Host: Display init as RDP.DesktopWidth = {_rdp.DesktopWidth}, RDP.DesktopWidth = {_rdp.DesktopWidth},");
+
 
             switch (_rdpServer.RdpFullScreenFlag)
             {
@@ -534,7 +548,7 @@ namespace PRM.Core.Protocol.RDP.Host
 
         public override bool CanResizeNow()
         {
-            return Status == ProtocolHostStatus.Connected;
+            return Status == ProtocolHostStatus.Connected && _flagHasLogin == true;
         }
 
         #endregion Base Interface
@@ -626,6 +640,8 @@ namespace PRM.Core.Protocol.RDP.Host
         {
             SimpleLogHelper.Debug("RDP Host:  RdpOnOnLoginComplete");
 
+            _flagHasLogin = true;
+            OnCanResizeNowChanged?.Invoke();
             RdpHost.Visibility = Visibility.Visible;
             GridLoading.Visibility = Visibility.Collapsed;
             GridMessageBox.Visibility = Visibility.Collapsed;
@@ -664,7 +680,7 @@ namespace PRM.Core.Protocol.RDP.Host
         {
             try
             {
-                Console.WriteLine($@"RDP resize: W = {w}, H = {h}");
+                SimpleLogHelper.Debug($@"RDP resize to: W = {w}, H = {h}, ScaleFactor = {_primaryScaleFactor}");
                 var p = _primaryScaleFactor;
                 ReadScaleFactor();
                 if (_rdp.DesktopWidth != w || _rdp.DesktopHeight != h || p != _primaryScaleFactor)
@@ -712,6 +728,9 @@ namespace PRM.Core.Protocol.RDP.Host
             ParentWindow.Height = screenSize.Height / (_primaryScaleFactor / 100.0);
             ParentWindow.Left = screenSize.Left / (_primaryScaleFactor / 100.0);
             ParentWindow.Top = screenSize.Top / (_primaryScaleFactor / 100.0);
+
+            SimpleLogHelper.Debug($"RDP to FullScreen resize ParentWindow to : W = {ParentWindow.Width}, H = {ParentWindow.Height}, while screen size is {screenSize.Width} × {screenSize.Height}, ScaleFactor = {_primaryScaleFactor}");
+
             // WARNING!: EnableFullAllScreens do not need to SetRdpResolution
             if (_rdpServer.RdpFullScreenFlag == ERdpFullScreenFlag.EnableFullScreen)
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Shawn.Utils;
 
 namespace PRM.Core.Model
@@ -82,17 +83,19 @@ namespace PRM.Core.Model
         public override void Save()
         {
             StopAutoSave = true;
+
             _ini.WriteValue(nameof(AppStartAutomatically).ToLower(), _sectionName, AppStartAutomatically.ToString());
             _ini.WriteValue(nameof(AppStartMinimized).ToLower(), _sectionName, AppStartMinimized.ToString());
             _ini.WriteValue(nameof(ServerOrderBy).ToLower(), _sectionName, ServerOrderBy.ToString());
             _ini.WriteValue(nameof(TabMode).ToLower(), _sectionName, TabMode.ToString());
 
-            // TODO delete after 2021.04;
-            SetSelfStartingHelper.SetSelfStartByShortcut(false, SystemConfig.AppName);
+            SimpleLogHelper.Debug($"Set AppStartAutomatically = {AppStartAutomatically}");
 
 #if FOR_MICROSOFT_STORE_ONLY
+            SimpleLogHelper.Debug($"SetSelfStartingHelper.SetSelfStartByStartupTask({AppStartAutomatically}, \"{SystemConfig.AppName}\")");
             SetSelfStartingHelper.SetSelfStartByStartupTask(AppStartAutomatically, SystemConfig.AppName);
 #else
+            SimpleLogHelper.Debug($"SetSelfStartingHelper.SetSelfStartByRegistryKey({AppStartAutomatically}, \"{SystemConfig.AppName}\")");
             SetSelfStartingHelper.SetSelfStartByRegistryKey(AppStartAutomatically, SystemConfig.AppName);
 #endif
 
@@ -113,6 +116,13 @@ namespace PRM.Core.Model
             if (Enum.TryParse<EnumTabMode>(_ini.GetValue(nameof(TabMode).ToLower(), _sectionName, TabMode.ToString()), out var tm))
                 TabMode = tm;
             StopAutoSave = false;
+
+#if FOR_MICROSOFT_STORE_ONLY
+            Task.Factory.StartNew(async () =>
+            {
+                AppStartAutomatically = await SetSelfStartingHelper.IsSelfStartByStartupTask(SystemConfig.AppName);
+            });
+#endif
         }
 
         public override void Update(SystemConfigBase newConfig)

@@ -77,28 +77,6 @@ namespace PRM
             };
         }
 
-        private void UnSetShortcutAutoStart(StartupEventArgs startupEvent)
-        {
-            // TODO delete at 2021.04
-#if !FOR_MICROSOFT_STORE_ONLY
-            var startupMode = SetSelfStartingHelper.StartupMode.Normal;
-            if (startupEvent.Args.Length > 0)
-            {
-                System.Enum.TryParse(startupEvent.Args[0], out startupMode);
-            }
-            if (startupMode == SetSelfStartingHelper.StartupMode.SetSelfStart)
-            {
-                SetSelfStartingHelper.SetSelfStartByShortcut(true, SystemConfig.AppName);
-                Environment.Exit(0);
-            }
-            if (startupMode == SetSelfStartingHelper.StartupMode.UnsetSelfStart)
-            {
-                SetSelfStartingHelper.SetSelfStartByShortcut(false, SystemConfig.AppName);
-                Environment.Exit(0);
-            }
-#endif
-        }
-
         private void OnlyOneAppInstanceCheck()
         {
             _onlyOneAppInstanceHelper = new OnlyOneAppInstanceHelper(SystemConfig.AppName);
@@ -143,19 +121,18 @@ namespace PRM
 
         private bool InitSystemConfig(string appDateFolder)
         {
-            var iniPath = Path.Combine(appDateFolder, SystemConfig.AppName + ".ini");
-
-#if !FOR_MICROSOFT_STORE_ONLY
-            // for portable purpose
-            if (Environment.CurrentDirectory.IndexOf(@"C:\Windows", StringComparison.OrdinalIgnoreCase) < 0)
+            var iniPath = Path.Combine(Environment.CurrentDirectory, SystemConfig.AppName + ".ini");
+            if (IOPermissionHelper.IsFileCanWriteNow(iniPath) == false)
             {
-                var iniOnCurrentPath = Path.Combine(Environment.CurrentDirectory, SystemConfig.AppName + ".ini");
-                if (IOPermissionHelper.HasWritePermissionOnFile(iniOnCurrentPath))
-                {
-                    iniPath = SystemConfig.AppName + ".ini";
-                }
+                iniPath = Path.Combine(appDateFolder, SystemConfig.AppName + ".ini");
             }
+#if FOR_MICROSOFT_STORE_ONLY
+            iniPath = Path.Combine(appDateFolder, SystemConfig.AppName + ".ini");
 #endif
+            if (IOPermissionHelper.IsFileCanWriteNow(iniPath) == false)
+            {
+                throw new FileLoadException($"Our config file `{iniPath}` can not write!");
+            }
 
             // if ini is not existed, then it would be a new user
             bool isNewUser = !File.Exists(iniPath);
@@ -221,7 +198,6 @@ namespace PRM
             // BASE MODULES
             InitLog(appDateFolder);
             InitExceptionHandle();
-            UnSetShortcutAutoStart(startupEvent);
             OnlyOneAppInstanceCheck();
             KillPutty();
             InitEvent();

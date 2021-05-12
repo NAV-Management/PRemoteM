@@ -5,6 +5,8 @@ using System.Linq;
 using System.Windows;
 using Dragablz;
 using PRM.Core.Model;
+using PRM.Core.Protocol.RDP;
+using PRM.Core.Protocol.RDP.Host;
 using Shawn.Utils;
 using PRM.Model;
 using PRM.View.TabWindow;
@@ -67,6 +69,33 @@ namespace PRM.ViewModel
             set => SetAndNotifyIfChanged(nameof(Title), ref _title, value);
         }
 
+
+
+        public ResizeMode WindowResizeMode
+        {
+            get
+            {
+                if (_isLocked 
+                    || SelectedItem?.Content == null
+                    || (SelectedItem?.Content is AxMsRdpClient09Host && SelectedItem?.CanResizeNow == false))
+                    return ResizeMode.NoResize;
+                return ResizeMode.CanResize;
+            }
+        }
+
+
+        private bool _isLocked = false;
+        public bool IsLocked
+        {
+            get => _isLocked;
+            set
+            {
+                SetAndNotifyIfChanged(nameof(IsLocked), ref _isLocked, value);
+                RaisePropertyChanged(nameof(WindowResizeMode));
+            }
+        }
+
+
         public ObservableCollection<TabItemViewModel> Items { get; } = new ObservableCollection<TabItemViewModel>();
 
         public Visibility BtnCloseAllVisibility => Items.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
@@ -96,7 +125,18 @@ namespace PRM.ViewModel
             set
             {
                 SetAndNotifyIfChanged(nameof(SelectedItem), ref _selectedItem, value);
-                SetTitle();
+                RaisePropertyChanged(nameof(WindowResizeMode));
+                if (_selectedItem != null)
+                {
+                    SetTitle();
+                    _selectedItem.PropertyChanged += (sender, args) =>
+                    {
+                        if (args.PropertyName == nameof(TabItemViewModel.CanResizeNow))
+                        {
+                            RaisePropertyChanged(nameof(WindowResizeMode));
+                        }
+                    };
+                }
             }
         }
 
@@ -136,6 +176,7 @@ namespace PRM.ViewModel
                 {
                     _cmdHostGoFullScreen = new RelayCommand((o) =>
                     {
+                        if(IsLocked) return;
                         if (this.SelectedItem?.Content?.CanResizeNow() ?? false)
                             RemoteWindowPool.Instance.MoveProtocolHostToFullScreen(SelectedItem.Content.ConnectionId);
                     }, o => this.SelectedItem != null && (this.SelectedItem.Content?.CanFullScreen ?? false));
@@ -250,6 +291,7 @@ namespace PRM.ViewModel
                 {
                     _cmdCloseAll = new RelayCommand((o) =>
                     {
+                        if (IsLocked) return;
                         RemoteWindowPool.Instance.DelTabWindow(Token);
                     });
                 }
@@ -267,6 +309,7 @@ namespace PRM.ViewModel
                 {
                     _cmdClose = new RelayCommand((o) =>
                     {
+                        if (IsLocked) return;
                         if (SelectedItem != null)
                         {
                             RemoteWindowPool.Instance.DelProtocolHostInSyncContext(SelectedItem?.Content?.ConnectionId);

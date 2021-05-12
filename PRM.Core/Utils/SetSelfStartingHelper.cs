@@ -1,6 +1,10 @@
-﻿#define SHORTCUT_METHOD
+﻿//#define SHORTCUT_METHOD
 #define REGISTRY_METHOD
 #define STORE_METHOD
+
+#if FOR_MICROSOFT_STORE_ONLY
+#undef REGISTRY_METHOD
+#endif
 
 using System;
 using System.Diagnostics;
@@ -15,9 +19,6 @@ using System.Windows;
 using Windows.ApplicationModel;
 #endif
 
-#if FOR_MICROSOFT_STORE
-
-#endif
 
 namespace Shawn.Utils
 {
@@ -207,18 +208,12 @@ namespace Shawn.Utils
 
         public static async Task<bool> IsSelfStartByStartupTask(string appName)
         {
-            var result = StartupTask.GetAsync(appName).GetResults();
-            switch (result.State)
+            StartupTask startupTask = await StartupTask.GetAsync(appName); // Pass the task ID you specified in the appxmanifest file
+            switch (startupTask.State)
             {
-                case StartupTaskState.Disabled:
-                case StartupTaskState.DisabledByUser:
-                case StartupTaskState.DisabledByPolicy:
-                    return false;
-
                 case StartupTaskState.Enabled:
                 case StartupTaskState.EnabledByPolicy:
                     return true;
-
                 default:
                     return false;
             }
@@ -226,38 +221,40 @@ namespace Shawn.Utils
 
         public static async void SetSelfStartByStartupTask(bool isSetSelfStart, string appName)
         {
-            var result = StartupTask.GetAsync(appName).GetResults();
-            switch (result.State)
+            var result = await StartupTask.GetAsync(appName);
+            Debug.WriteLine($"SetSelfStartByStartupTask: GetAsync(appName).GetResults() now = {result}");
+
+            StartupTask startupTask = await StartupTask.GetAsync(appName); // Pass the task ID you specified in the appxmanifest file
+            switch (startupTask.State)
             {
                 case StartupTaskState.Disabled:
                     if (isSetSelfStart)
                     {
-                        var newState = result.RequestEnableAsync().GetResults();
+                        // Task is disabled but can be enabled.
+                        StartupTaskState newState = await startupTask.RequestEnableAsync(); // ensure that you are on a UI thread when you call RequestEnableAsync()
+                        Debug.WriteLine("Request to enable startup, result = {0}", newState);
+                    }
+
+                    break;
+                case StartupTaskState.DisabledByUser:
+                    if (isSetSelfStart)
+                    {
+                        // Task is disabled and user must enable it manually.
+                        MessageBox.Show("You have disabled this app's ability to run " +
+                                        "as soon as you sign in, but if you change your mind, " +
+                                        "you can enable this in the Startup tab in Task Manager.",
+                            "Warning");
                     }
                     break;
-
-                case StartupTaskState.DisabledByUser:
-                    MessageBox.Show(
-                        "You have disabled this app's ability to run " +
-                        "as soon as you sign in, but if you change your mind, " +
-                        "you can enable this in the Startup tab in Task Manager.",
-                        "Warning");
-                    break;
-
                 case StartupTaskState.DisabledByPolicy:
                     Debug.WriteLine("Startup disabled by group policy, or not supported on this device");
                     break;
-
                 case StartupTaskState.Enabled:
-                    if (!isSetSelfStart)
+                    if (isSetSelfStart == false)
+                    {
                         result.Disable();
+                    }
                     break;
-
-                case StartupTaskState.EnabledByPolicy:
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException();
             }
         }
 

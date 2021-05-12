@@ -6,10 +6,13 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Interop;
 using Dragablz;
 using PRM.Core.Model;
 using PRM.Core.Protocol;
+using PRM.Core.Protocol.RDP;
+using PRM.Core.Protocol.RDP.Host;
 using Shawn.Utils;
 using PRM.Model;
 using PRM.ViewModel;
@@ -26,12 +29,15 @@ namespace PRM.View.TabWindow
         private IntPtr _lastActivatedWindowHandle = IntPtr.Zero;
         private IntPtr _myWindowHandle;
         private readonly Timer _timer4CheckForegroundWindow;
+        private WindowState _lastWindowState;
 
         protected TabWindowBase(string token)
         {
             Vm = new VmTabWindow(token);
             DataContext = Vm;
             _timer4CheckForegroundWindow = new Timer();
+
+            _lastWindowState = this.WindowState;
 
             this.Loaded += (sender, args) =>
             {
@@ -41,7 +47,22 @@ namespace PRM.View.TabWindow
                 _timer4CheckForegroundWindow.AutoReset = true;
                 _timer4CheckForegroundWindow.Elapsed += Timer4CheckForegroundWindowOnElapsed;
                 _timer4CheckForegroundWindow.Start();
+
+                var source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+                source.AddHook(new HwndSourceHook(WndProc));
             };
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            const int WM_DEVICECHANGE = 0x0219;
+            if (msg == WM_DEVICECHANGE)
+                if (Vm?.SelectedItem?.Content is AxMsRdpClient09Host rdp)
+                {
+                    SimpleLogHelper.Debug($"rdp.NotifyRedirectDeviceChange((uint){wParam}, (int){lParam})");
+                    rdp.NotifyRedirectDeviceChange(msg, (uint)wParam, (int)lParam);
+                }
+            return IntPtr.Zero;
         }
 
         private void Timer4CheckForegroundWindowOnElapsed(object sender, ElapsedEventArgs e)
@@ -88,6 +109,17 @@ namespace PRM.View.TabWindow
         {
             this.StateChanged += delegate (object sender, EventArgs args)
             {
+                if (this.WindowState != WindowState.Minimized)
+                    if (Vm.SelectedItem?.CanResizeNow != true)
+                    {
+                        this.WindowState = _lastWindowState;
+                        return;
+                    }
+                    else
+                    {
+                        _lastWindowState = this.WindowState;
+                    }
+
                 if (this.WindowState != WindowState.Minimized)
                 {
                     Vm?.SelectedItem?.Content?.ToggleAutoResize(true);
@@ -189,5 +221,20 @@ namespace PRM.View.TabWindow
 
         [DllImport("user32.dll")]
         private static extern int SetForegroundWindow(IntPtr hWnd);
+
+
+
+
+        protected override void WinTitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                if (!Vm.SelectedItem.CanResizeNow)
+                    return;
+                if (Vm.IsLocked)
+                    return;
+            }
+            base.WinTitleBar_MouseDown(sender, e);
+        }
     }
 }
