@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using PRM.Core.Model;
+using PRM.Core.Protocol.BaseClassForm;
 
 
 namespace PRM.Core.Protocol.RDP
@@ -30,6 +31,8 @@ namespace PRM.Core.Protocol.RDP
         #region IValueConverter 成员  
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+            if (value == null)
+                return Enum.GetValues(typeof(ERdpFullScreenFlag)).Cast<int>().Max() + 1;
             return ((int)((ERdpFullScreenFlag)value)).ToString();
         }
 
@@ -48,6 +51,8 @@ namespace PRM.Core.Protocol.RDP
         #region IValueConverter 成员  
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+            if (value == null)
+                return false;
             if ((ERdpFullScreenFlag)value == ERdpFullScreenFlag.Disable)
                 return false;
             return true;
@@ -66,11 +71,15 @@ namespace PRM.Core.Protocol.RDP
         #region IValueConverter 成员  
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+            if (value == null)
+                return Enum.GetValues(typeof(ERdpWindowResizeMode)).Cast<int>().Max() + 1;
             return ((int)((ERdpWindowResizeMode)value)).ToString();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+            if (value == null)
+                return null;
             return (ERdpWindowResizeMode)(int.Parse(value.ToString()));
         }
         #endregion
@@ -83,6 +92,8 @@ namespace PRM.Core.Protocol.RDP
         #region IValueConverter 成员  
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+            if (value == null)
+                return Enum.GetValues(typeof(EDisplayPerformance)).Cast<int>().Max() + 1;
             return ((int)((EDisplayPerformance)value)).ToString();
         }
 
@@ -95,19 +106,19 @@ namespace PRM.Core.Protocol.RDP
 
 
 
-    public class ConverterEGatewayMode2Bool : IValueConverter
+    public class ConverterEGatewayMode : IValueConverter
     {
         #region IValueConverter 成员  
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            var e = (EGatewayMode)parameter;
-            return e == (EGatewayMode)value;
+            if (value == null)
+                return Enum.GetValues(typeof(EGatewayMode)).Cast<int>().Max() + 1;
+            return ((int)((EGatewayMode)value)).ToString();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            var e = (EGatewayMode)parameter;
-            return e;
+            return (EGatewayMode)(int.Parse(value.ToString()));
         }
         #endregion
     }
@@ -119,6 +130,8 @@ namespace PRM.Core.Protocol.RDP
         #region IValueConverter 成员  
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+            if (value == null)
+                return Enum.GetValues(typeof(EGatewayLogonMethod)).Cast<int>().Max() + 1;
             return ((int)((EGatewayLogonMethod)value)).ToString();
         }
 
@@ -129,18 +142,18 @@ namespace PRM.Core.Protocol.RDP
         #endregion
     }
 
-    public class ConverterSoundsEnable : IValueConverter
+    public class ConverterEAudioRedirectionMode : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            var a = (bool?)parameter;
-            var b = (bool?)value;
-            return a == b;
+            if (value == null)
+                return Enum.GetValues(typeof(EAudioRedirectionMode)).Cast<int>().Max() + 1;
+            return ((int)((EAudioRedirectionMode)value)).ToString();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            return (bool)value ? parameter : Binding.DoNothing;
+            return (EAudioRedirectionMode)(int.Parse(value.ToString()));
         }
     }
 }
