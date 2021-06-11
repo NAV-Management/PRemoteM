@@ -153,6 +153,9 @@
     <Compile Include="Controls\AutoCompleteComboBox.xaml.cs">
       <DependentUpon>AutoCompleteComboBox.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\InputWindow.xaml.cs">
+      <DependentUpon>InputWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\LogoSelector.xaml.cs">
       <DependentUpon>LogoSelector.xaml</DependentUpon>
     </Compile>
@@ -162,7 +165,11 @@
     <Compile Include="Controls\ServerListItem.xaml.cs">
       <DependentUpon>ServerListItem.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TagsEditor.xaml.cs">
+      <DependentUpon>TagsEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Model\RemoteWindowPool.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="ViewModel\VmAboutPage.cs" />
     <Compile Include="ViewModel\VmTabWindow.cs" />
     <Compile Include="ViewModel\VmSystemConfigPage.cs" />
@@ -206,6 +213,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Controls\InputWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\LogoSelector.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -215,6 +226,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\ServerListItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TagsEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -340,6 +355,7 @@
     <PostBuildEvent>echo copy $(TargetDir)zh-cn.xaml to $(SolutionDir)PRM.Core\Languages\zh-cn.xaml
 echo copy $(TargetDir)en-us.xaml to $(SolutionDir)PRM.Core\Languages\en-us.xaml
 echo copy $(TargetDir)de-de.xaml to $(SolutionDir)PRM.Core\Languages\de-de.xaml
+echo copy $(TargetDir)de-de.xaml to $(SolutionDir)PRM.Core\Languages\fr-FR.xaml
 
 if exist $(TargetDir)zh-cn.xaml (
 xcopy /y $(TargetDir)zh-cn.xaml $(SolutionDir)PRM.Core\Languages\zh-cn.xaml*  /C /E /Q
@@ -349,6 +365,9 @@ xcopy /y $(TargetDir)en-us.xaml $(SolutionDir)PRM.Core\Languages\en-us.xaml*  /C
 )
 if exist $(TargetDir)de-de.xaml (
 xcopy /y $(TargetDir)de-de.xaml $(SolutionDir)PRM.Core\Languages\de-de.xaml*  /C /E /Q
+)
+if exist $(TargetDir)fr-FR.xaml (
+xcopy /y $(TargetDir)fr-FR.xaml $(SolutionDir)PRM.Core\Languages\fr-FR.xaml*  /C /E /Q
 )</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
